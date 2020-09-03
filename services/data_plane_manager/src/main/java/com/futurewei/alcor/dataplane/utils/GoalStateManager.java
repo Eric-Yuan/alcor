@@ -152,7 +152,7 @@ public class GoalStateManager {
                     final Set<NeighborInfo> neighborInfos1 =
                         internalPortEntity.getInternalNeighborInfo1();
                     neighborInfos1.addAll(neighborInfos3);
-                    internalPortEntity.setInternalNeighborInfo1(neighborInfos);
+                    internalPortEntity.setInternalNeighborInfo1(neighborInfos1);
                   }
                 } catch (Exception e) {
                   e.printStackTrace();
@@ -490,6 +490,7 @@ public class GoalStateManager {
    */
   public List<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>>
       talkToACA(Map<String, Goalstate.GoalState> gss, boolean isFast, int port, boolean isOvs) {
-    return goalStateService.SendGoalStateToHosts(gss, isFast, port, isOvs);
+      //return goalStateService.SendGoalStateToHosts(gss, isFast, port, isOvs);
+      return new ArrayList<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>>();
   }
 }
