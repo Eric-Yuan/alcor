@@ -240,7 +240,7 @@ public class GoalStateManager {
                                 .buildPartial();
                         // since dpm has to do everything including neighbor in 1 shot
                         if (portStateHashSet.size() < neighborSB.size()) {
-                            System.out.print("portStateHashSet.size()ï¼š" +
+                            System.out.print("portStateHashSet.size()£º" +
                                     portStateHashSet.size() +
                                     " < neighborSB.size(): " +
                                     neighborSB.size() +
