@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fakeport-configmap
+data:
+  application.properties: |
+    microservices.dataplane.service.url=http://dpmmanager-service.default.svc.cluster.local:9010/v4/port/
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: fakeportmanager
+  name: fakeportmanager
+spec:
+  selector:
+    matchLabels:
+      app: fakeportmanager
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: fakeportmanager
+    spec:
+      volumes:
+        - name: fakeport-volume
+          configMap:
+            name: fakeport-configmap
+            items:
+              - key: application.properties
+                path: application.properties
+      containers:
+        - image: zhonghaolyu/repo:fakeportKube1
+          #- image: fwnetworking/controller:port_manager-v0.3.0
+          name: fakeportmanager-web
+          imagePullPolicy: IfNotPresent
+          command: ["java", "-jar", "/app/AlcorFakePortManager-0.0.1-SNAPSHOT.jar", "--spring.config.location=/etc/port/application.properties"]
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: fakeport-volume
+              mountPath: /etc/fakeport
+          envFrom:
+            - configMapRef:
+                name: fakeport-configmap
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fakeportmanager-service
+  labels:
+    name: fakeportmanager-service
+spec:
+  type: NodePort
+  ports:
+    - port: 9099
+      targetPort: 8080
+      nodePort: 30099
+  selector:
+    app: fakeportmanager
+
