@@ -80,18 +80,18 @@ public class OVSGoalStateServiceImpl implements GoalStateService {
                     });
               })
           .collect(Collectors.toList())
-          .forEach(
-              e -> {
-                try {
-                  result.add(e.get());
-                } catch (InterruptedException ex) {
-                  ex.printStackTrace();
-                  throw new DPMFailureException(ex.getMessage());
-                } catch (ExecutionException ex) {
-                  ex.printStackTrace();
-                  throw new DPMFailureException(ex.getMessage());
-                }
-              });
+          .forEach(e -> {int i = 1;});
+//              e -> {
+//                try {
+//                  result.add(e.get());
+//                } catch (InterruptedException ex) {
+//                  ex.printStackTrace();
+//                  throw new DPMFailureException(ex.getMessage());
+//                } catch (ExecutionException ex) {
+//                  ex.printStackTrace();
+//                  throw new DPMFailureException(ex.getMessage());
+//                }
+//              });
       return result;
     }
     throw new DPMFailureException("protocol other than ovs is not supported for now");
@@ -111,7 +111,7 @@ public class OVSGoalStateServiceImpl implements GoalStateService {
       Goalstate.GoalState goalState, boolean isFast, int grpcPort, String ip)
       throws InterruptedException {
     if (isFast) {
-      LOG.log(Level.FINE, "#### " + Thread.currentThread() + " " + ip);
+//      LOG.log(Level.FINE, "#### " + Thread.currentThread() + " " + ip);
       GoalStateProvisionerClient goalStateProvisionerClient =
           new GoalStateProvisionerClient(ip, grpcPort);
       List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>
