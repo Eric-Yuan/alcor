@@ -78,7 +78,7 @@ public class GoalStateManager {
   public Map<String, Goalstate.GoalState> transformNorthToSouth(
       NetworkConfiguration networkConfiguration) throws RuntimeException {
     // print entry input
-    printNetworkConfiguration(networkConfiguration);
+//    printNetworkConfiguration(networkConfiguration);
 
     Map<String, Set<String>> portsInSameSubnetMap = new HashMap<>();
 
@@ -123,6 +123,7 @@ public class GoalStateManager {
       }
     }
 
+    long start = System.currentTimeMillis();
     portsInSameSubnetMap.keySet().stream()
         .forEach(
             sid -> {
@@ -130,10 +131,10 @@ public class GoalStateManager {
                 final Set<NeighborInfo> neighborInfos = neighborInfoInSameSubenetMap.get(sid);
                 final InternalPortEntity internalPortEntity = portMap.get(pid);
                 if (internalPortEntity == null) {
-                  LOG.log(Level.WARNING, (
-                      "portId: "
-                          + pid
-                          + " provided in neighbor but NOT in port_internal, skip for now, likely to be dpm client error"));
+//                  LOG.log(Level.WARNING, (
+//                      "portId: "
+//                          + pid
+//                          + " provided in neighbor but NOT in port_internal, skip for now, likely to be dpm client error"));
                   continue;
                 }
                 try {
@@ -162,10 +163,13 @@ public class GoalStateManager {
                 }
               }
             });
+    long end = System.currentTimeMillis();
+    LOG.log(Level.INFO,"foreach portsInSameSubnetMap time cost time: "+(end - start)+" ms");
 
     // construct sb msg by ip
     Map<String, Goalstate.GoalState> goalStateHashMap = new HashMap<>();
     // TODO would opt this part when perf needed
+    start = System.currentTimeMillis();
     mapGroupedByHostIp.entrySet().stream()
         .forEach(
             eachGSOnSingleIP -> {
@@ -236,6 +240,11 @@ public class GoalStateManager {
                                 .buildPartial();
                         // since dpm has to do everything including neighbor in 1 shot
                         if (portStateHashSet.size() < neighborSB.size()) {
+                            System.out.print("portStateHashSet.size()：" +
+                                    portStateHashSet.size() +
+                                    " < neighborSB.size(): " +
+                                    neighborSB.size() +
+                                    "\n");
                           for (Port.PortConfiguration.HostInfo h : neighborSB) {
                             String pid = h.getMacAddress();
                             Port.PortConfiguration portConfiguration1 =
@@ -328,6 +337,8 @@ public class GoalStateManager {
 
                         }
                       });
+              System.out.print("The size of portStateHashSet is " + portStateHashSet.size());
+
               // leave a dummy security group value since for now there is no impl for sg
               SecurityGroup.SecurityGroupConfiguration securityGroupConfiguration =
                   SecurityGroup.SecurityGroupConfiguration.newBuilder().build();
@@ -345,8 +356,10 @@ public class GoalStateManager {
                       .build();
               goalStateHashMap.put(eachGSOnSingleIP.getKey(), goalState);
             });
-    LOG.log(Level.INFO,
-            goalStateHashMap.entrySet().toString());
+      end = System.currentTimeMillis();
+      LOG.log(Level.INFO,"construct sb msg time cost: "+(end - start)+" ms");
+//    LOG.log(Level.INFO,
+//            goalStateHashMap.entrySet().toString());
     return goalStateHashMap;
   }
 
@@ -458,7 +471,13 @@ public class GoalStateManager {
             currentPortEntity.getId(),
             currentPortEntity.getMacAddress()));
     tempPorts.add(currentPortEntity.getId());
+
+    long start = System.currentTimeMillis();
     if (currentPortEntity.getNeighborInfos() != null) {
+//        int neighborInfosSize = currentPortEntity.getNeighborInfos().size();
+//        List<String> tempPortsList = new ArrayList<>(neighborInfosSize);
+//        List<NeighborInfo> neighborInfosList = new ArrayList<>(neighborInfosSize);
+
       for (NeighborInfo neighborInfo : currentPortEntity.getNeighborInfos()) {
         tempNeighbor.add(
             new NeighborInfo(
@@ -473,6 +492,10 @@ public class GoalStateManager {
 
     portsInSameSubnetMap.put(fixedIp.getSubnetId(), tempPorts);
     neighborInfoInSameSubenetMap.put(fixedIp.getSubnetId(), tempNeighbor);
+
+    long end = System.currentTimeMillis();
+    LOG.log(Level.INFO,"groupNeighborAndPortsBySubnet time cost : "+(end - start)+" ms, loopCount: " +
+              currentPortEntity.getNeighborInfos().size());
   }
   /**
    * deploy GoalState to ACA in parallel and return ACA processing result
@@ -487,7 +510,7 @@ public class GoalStateManager {
    */
   public List<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>>
       talkToACA(Map<String, Goalstate.GoalState> gss, boolean isFast, int port, boolean isOvs) {
-      //return goalStateService.SendGoalStateToHosts(gss, isFast, port, isOvs);
+//      return goalStateService.SendGoalStateToHosts(gss, isFast, port, isOvs);
       return new ArrayList<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>>();
   }
 }

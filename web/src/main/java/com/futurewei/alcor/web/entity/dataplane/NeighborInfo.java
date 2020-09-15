@@ -93,7 +93,7 @@ public class NeighborInfo {
 
     @Override
     public int hashCode() {
-       return 1;
+       return (getHostId() + getHostIp() + getPortId() + getPortIp() + getPortMac()).hashCode();
     }
 
     @Override

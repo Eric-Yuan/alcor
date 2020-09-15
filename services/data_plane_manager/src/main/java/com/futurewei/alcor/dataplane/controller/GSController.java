@@ -202,7 +202,8 @@ public class GSController {
     long done = System.currentTimeMillis();
     resultAll.setResultList(result);
     resultAll.setOverrallTime(done - start);
-    LOG.log(Level.INFO,"DPM+ACA time cost: goalState= "+gs+" time: "+(done - start)+" ms");
+//    LOG.log(Level.INFO,"DPM+ACA time cost: goalState= "+gs+" time: "+(done - start)+" ms");
+    LOG.log(Level.INFO,"DPM time cost time: "+(done - start)+" ms");
     return resultAll;
   }
 
