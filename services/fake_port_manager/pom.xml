@@ -112,6 +112,8 @@
                     <systemPropertyVariables>
                         <io.springfox.staticdocs.outputDir>${swagger.output.dir}</io.springfox.staticdocs.outputDir>
                     </systemPropertyVariables>
+                    <argLine>-Xms8196m</argLine>
+                    <argLine>-Xmx16392m</argLine>
                 </configuration>
             </plugin>
             <plugin>
