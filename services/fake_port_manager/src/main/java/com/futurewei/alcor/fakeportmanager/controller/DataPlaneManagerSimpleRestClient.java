@@ -11,7 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 
 @Configuration
-public class DataPlaneManagerBulkRestClient {
+public class DataPlaneManagerSimpleRestClient {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
