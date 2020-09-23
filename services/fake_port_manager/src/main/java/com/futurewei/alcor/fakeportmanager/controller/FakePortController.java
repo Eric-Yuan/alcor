@@ -16,7 +16,6 @@ Licensed under the Apache License, Version 2.0 (the "License");
 package com.futurewei.alcor.fakeportmanager.controller;
 
 import com.futurewei.alcor.common.utils.Ipv4AddrUtil;
-import com.futurewei.alcor.schema.Neighbor;
 import com.futurewei.alcor.web.entity.dataplane.InternalPortEntity;
 import com.futurewei.alcor.web.entity.dataplane.InternalSubnetEntity;
 import com.futurewei.alcor.web.entity.dataplane.NeighborInfo;
@@ -41,7 +40,7 @@ public class FakePortController {
     private HttpServletRequest request;
 
     @Autowired
-    private DataPlaneManagerBulkRestClient dpmClient;
+    private DataPlaneManagerSimpleRestClient dpmClient;
 
     private final Object lockSubnet = new Object();
     private final Object lockNeighbor = new Object();
@@ -257,77 +256,6 @@ public class FakePortController {
         System.out.print("during after sent to DPM: " + (afterSent - startTime) + "\n");
 
         return new ScaleTestResult(afterSent - beforeSent);
-    }
-
-    @PostMapping({"/scale-test/test"})
-    @ResponseBody
-    @ResponseStatus(HttpStatus.OK)
-    public ScaleTestResult test(@RequestBody Parameters parameters) throws Exception {
-        int count = parameters.create_count;
-        List<NeighborInfo> neighborInfos = new ArrayList<>();
-        for (int loop = 0; loop < count; loop++) {
-            neighborInfos.add(new NeighborInfo(
-                    String.valueOf(loop), "hostId", "portId", "portMac", "portIp"));
-        }
-
-//        List<NeighborInfo> neighborInfoList = new LinkedList<>();
-//        long hostIPBase = Ipv4AddrUtil.ipv4ToLong("10.0.0.1");
-//        long macBase = bytesToLong(MacAddressUtil.parseMAC("fe:ab:00:00:00:00"));
-//        long vpcIpBase = Ipv4AddrUtil.ipv4ToLong("172.16.0.0");
-//
-//
-//        for (int subnetLoop = 0; subnetLoop < SUBNET_NUM; subnetLoop++) {
-//
-//            List<NeighborInfo> tempNeighborInfoList = new ArrayList<>(NEIGHBOR_NUM / SUBNET_NUM);
-//            long subnetIPBase = vpcIpBase + subnetLoop * 4096;
-//
-//            int loopCount = subnetLoop * (NEIGHBOR_NUM / SUBNET_NUM);
-//            NeighborInfo tempNeighborInfo = null;
-//
-//            for (int portLoop = 0; portLoop < NEIGHBOR_NUM / SUBNET_NUM; portLoop++) {
-//                String hostIp = Ipv4AddrUtil.longToIpv4(hostIPBase + loopCount + 1);
-//                String hostId = "host-" + (loopCount + 1);
-//                String portId = "port-" + (loopCount + 1);
-//                String macAddr = MacAddressUtil.formatAddress(longToBytes(macBase + loopCount + 1));
-//                String portIp = Ipv4AddrUtil.longToIpv4(subnetIPBase + portLoop + 2);
-//
-//                tempNeighborInfo = neighborInfosPool[subnetLoop][portLoop];
-////                tempNeighborInfo.setHostId(hostId);
-//                tempNeighborInfo.setHostIp(hostIp);
-////                tempNeighborInfo.setPortId(portId);
-////                tempNeighborInfo.setPortIp(portIp);
-////                tempNeighborInfo.setPortMac(macAddr);
-//
-//                tempNeighborInfoList.add(tempNeighborInfo);
-//                loopCount++;
-//            }
-//
-//            neighborInfoList.addAll(tempNeighborInfoList);
-//        }
-
-        long startTime = System.currentTimeMillis();
-
-        Set<NeighborInfo> hashSet = new HashSet<>();
-        Map<String, Set<NeighborInfo>> map = new HashMap<>();
-//        System.out.print("initial hashset buckets size is： " + hashSet.);
-
-        for (NeighborInfo neighborInfo : neighborInfos) {
-            hashSet.add(new NeighborInfo(
-                    neighborInfo.getHostIp(),
-                    neighborInfo.getHostId(),
-                    neighborInfo.getPortId(),
-                    neighborInfo.getPortMac(),
-                    neighborInfo.getPortIp()
-            ));
-        }
-        map.put("123", hashSet);
-
-        System.out.print("the size of neighborInfoList is: " + neighborInfos.size());
-//        System.out.print(neighborInfoList);
-
-        System.out.print("during time is： " + (System.currentTimeMillis() - startTime) + "ms");
-
-        return new ScaleTestResult(System.currentTimeMillis() - startTime);
     }
 
 }
