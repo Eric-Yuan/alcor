@@ -510,7 +510,7 @@ public class GoalStateManager {
    */
   public List<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>>
       talkToACA(Map<String, Goalstate.GoalState> gss, boolean isFast, int port, boolean isOvs) {
-//      return goalStateService.SendGoalStateToHosts(gss, isFast, port, isOvs);
-      return new ArrayList<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>>();
+      return goalStateService.SendGoalStateToHosts(gss, isFast, port, isOvs);
+//      return new ArrayList<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>>();
   }
 }

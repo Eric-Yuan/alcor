@@ -45,8 +45,8 @@ public class FakePortController {
     private final Object lockSubnet = new Object();
     private final Object lockNeighbor = new Object();
 
-    private final static int HOST_NUM = 1000000;
-    private final static int NEIGHBOR_NUM = 1000000;
+    private final static int HOST_NUM = 10000;
+    private final static int NEIGHBOR_NUM = 10000;
     private final static int SUBNET_NUM = 1000;
 
     private NeighborInfo [][] neighborInfosPool = new NeighborInfo[SUBNET_NUM][NEIGHBOR_NUM/SUBNET_NUM];
@@ -198,6 +198,7 @@ public class FakePortController {
         });
 
         List<NetworkConfiguration> toSendNetConfigs = new LinkedList<>();
+        NetworkConfiguration networkConfiguration = new NetworkConfiguration();
 
         for (int loop = 0; loop < count; loop++ ) {
 
@@ -222,11 +223,13 @@ public class FakePortController {
             InternalPortEntity internalPortEntity = new InternalPortEntity(
                     portEntity, routeEntities, neighborInfoList, bindingHostIP);
 
-            NetworkConfiguration networkConfiguration = new NetworkConfiguration();
             networkConfiguration.addPortEntity(internalPortEntity);
-            networkConfiguration.addVpcEntity(vpcEntity);
-            subnetInfoList.forEach(networkConfiguration::addSubnetEntity);
 
+//            System.out.print("networkConfiguration " + loop + ":" + networkConfiguration + "\n");
+        }
+
+        networkConfiguration.addVpcEntity(vpcEntity);
+        subnetInfoList.forEach(networkConfiguration::addSubnetEntity);
 //            System.out.print("networkConfiguration " + loop + ": \n" +
 //                    " portCount-" + networkConfiguration.getPortEntities().size() +
 //                    " vpcCount-" + networkConfiguration.getVpcs().size() +
@@ -235,10 +238,8 @@ public class FakePortController {
 //                    " during before send to DPM: " + (System.currentTimeMillis() - startTime) +
 //                    "\n");
 
-//            System.out.print("networkConfiguration " + loop + ":" + networkConfiguration + "\n");
 
-            toSendNetConfigs.add(networkConfiguration);
-        }
+        toSendNetConfigs.add(networkConfiguration);
 
         long beforeSent = System.currentTimeMillis();
         System.out.print("during before sent to DPM: " + (beforeSent - startTime) + "\n");
