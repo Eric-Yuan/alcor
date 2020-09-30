@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -71,27 +72,20 @@ public class OVSGoalStateServiceImpl implements GoalStateService {
       List<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>> result =
           new ArrayList<>();
       if (isFast) {
+        CountDownLatch countDownLatch = new CountDownLatch(gss.size());
         gss.entrySet().parallelStream()
-                .map(
-                        e -> {
-                          GoalStateProvisionerClient client = new GoalStateProvisionerClient(e.getKey(), grpcPort);
-                          client.AsyncPushNetworkResourceStates(e.getValue(), result);
-                          return client;
-                        })
-
                 .forEach(
                         e -> {
-                          try {
-                            e.wait();
-                            e.shutdown();
-                          } catch (InterruptedException ex) {
-                            ex.printStackTrace();
-                            throw new DPMFailureException(ex.getMessage());
-                          }
-                        }
-                );
+                          GoalStateProvisionerClient client = new GoalStateProvisionerClient(e.getKey(), grpcPort);
+                          client.AsyncPushNetworkResourceStates(e.getValue(), result, countDownLatch);
+                        });
+        try {
+          countDownLatch.await();
+        } catch (InterruptedException e) {
+          LOG.log(Level.WARNING, "SendGoalStateToHosts failed: {0}", e.getMessage());
+        }
       }
-
+      
       return result;
     }
     throw new DPMFailureException("protocol other than ovs is not supported for now");

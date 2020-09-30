@@ -19,6 +19,7 @@ package com.futurewei.alcor.dataplane.config.grpc;
 import com.futurewei.alcor.common.logging.Logger;
 import com.futurewei.alcor.common.logging.LoggerFactory;
 import com.futurewei.alcor.dataplane.config.Config;
+import com.futurewei.alcor.dataplane.exception.DPMFailureException;
 import com.futurewei.alcor.schema.GoalStateProvisionerGrpc;
 import com.futurewei.alcor.schema.Goalstate;
 import com.futurewei.alcor.schema.Goalstateprovisioner;
@@ -28,6 +29,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
@@ -87,12 +89,14 @@ public class GoalStateProvisionerClient {
 
     public void AsyncPushNetworkResourceStates(
             Goalstate.GoalState state,
-            List<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>> resultList) {
+            List<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>> resultList,
+            CountDownLatch countDownLatch) {
         Logger alcorLog = LoggerFactory.getLogger();
         alcorLog.entering(this.getClass().getName(), "PushNetworkResourceStates(GoalState state)");
 
         alcorLog.log(Level.INFO, "GoalStateProvisionerClient : Will try to send GS with fast path...");
 
+        GoalStateProvisionerClient client = this;
         StreamObserver<Goalstateprovisioner.GoalStateOperationReply> observer = new StreamObserver<>(){
                     public void onNext(Goalstateprovisioner.GoalStateOperationReply reply) {
                         synchronized (resultList) {
@@ -102,10 +106,16 @@ public class GoalStateProvisionerClient {
 
                     public void onError(Throwable var1) {
                         alcorLog.log(Level.WARNING, "Async RPC failed: {0}", var1.getMessage());
+                        countDownLatch.countDown();
                     }
 
                     public void onCompleted() {
-                        this.notify();
+                        try{
+                            client.shutdown();
+                        } catch (InterruptedException ex) {
+                            alcorLog.log(Level.WARNING, "Async RPC shutdown failed: {0}", ex.getMessage());
+                        }
+                        countDownLatch.countDown();
                     }
                 };
         asyncStub.pushNetworkResourceStates(state, observer);
