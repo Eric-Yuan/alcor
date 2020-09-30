@@ -25,6 +25,7 @@ import com.futurewei.alcor.schema.Goalstateprovisioner;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -82,5 +83,31 @@ public class GoalStateProvisionerClient {
         alcorLog.exiting(this.getClass().getName(), "PushNetworkResourceStates(GoalState state)");
         return response.getOperationStatusesList();
 
+    }
+
+    public void AsyncPushNetworkResourceStates(
+            Goalstate.GoalState state,
+            List<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>> resultList) {
+        Logger alcorLog = LoggerFactory.getLogger();
+        alcorLog.entering(this.getClass().getName(), "PushNetworkResourceStates(GoalState state)");
+
+        alcorLog.log(Level.INFO, "GoalStateProvisionerClient : Will try to send GS with fast path...");
+
+        StreamObserver<Goalstateprovisioner.GoalStateOperationReply> observer = new StreamObserver<>(){
+                    public void onNext(Goalstateprovisioner.GoalStateOperationReply reply) {
+                        synchronized (resultList) {
+                            resultList.add(reply.getOperationStatusesList());
+                        }
+                    }
+
+                    public void onError(Throwable var1) {
+                        alcorLog.log(Level.WARNING, "Async RPC failed: {0}", var1.getMessage());
+                    }
+
+                    public void onCompleted() {
+
+                    }
+                };
+        asyncStub.pushNetworkResourceStates(state, observer);
     }
 }

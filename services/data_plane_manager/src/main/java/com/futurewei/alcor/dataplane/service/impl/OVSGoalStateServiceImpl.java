@@ -28,6 +28,7 @@ import com.futurewei.alcor.schema.Goalstateprovisioner;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -69,29 +70,27 @@ public class OVSGoalStateServiceImpl implements GoalStateService {
     if (isOvs) {
       List<List<Goalstateprovisioner.GoalStateOperationReply.GoalStateOperationStatus>> result =
           new ArrayList<>();
+      if (isFast) {
+        gss.entrySet().parallelStream()
+                .map(
+                        e -> {
+                          GoalStateProvisionerClient client = new GoalStateProvisionerClient(e.getKey(), grpcPort);
+                          client.AsyncPushNetworkResourceStates(e.getValue(), result);
+                          return client;
+                        })
 
-      gss.entrySet()
-          .parallelStream()
-          .map(
-              e -> {
-                return executorService.submit(
-                    () -> {
-                      return this.doSend(e.getValue(), isFast, grpcPort, e.getKey());
-                    });
-              })
-          .collect(Collectors.toList())
-          .forEach(
-              e -> {
-                try {
-                  result.add(e.get());
-                } catch (InterruptedException ex) {
-                  ex.printStackTrace();
-                  throw new DPMFailureException(ex.getMessage());
-                } catch (ExecutionException ex) {
-                  ex.printStackTrace();
-                  throw new DPMFailureException(ex.getMessage());
-                }
-              });
+                .forEach(
+                        e -> {
+                          try {
+                            e.shutdown();
+                          } catch (InterruptedException ex) {
+                            ex.printStackTrace();
+                            throw new DPMFailureException(ex.getMessage());
+                          }
+                        }
+                );
+      }
+
       return result;
     }
     throw new DPMFailureException("protocol other than ovs is not supported for now");
