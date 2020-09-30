@@ -82,6 +82,7 @@ public class OVSGoalStateServiceImpl implements GoalStateService {
                 .forEach(
                         e -> {
                           try {
+                            e.wait();
                             e.shutdown();
                           } catch (InterruptedException ex) {
                             ex.printStackTrace();

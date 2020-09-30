@@ -105,7 +105,7 @@ public class GoalStateProvisionerClient {
                     }
 
                     public void onCompleted() {
-
+                        this.notify();
                     }
                 };
         asyncStub.pushNetworkResourceStates(state, observer);
