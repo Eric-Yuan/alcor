@@ -80,7 +80,7 @@ public class OVSGoalStateServiceImpl implements GoalStateService {
                     });
               })
           .collect(Collectors.toList())
-          .forEach(e -> {int i = 1;});
+          .forEach(
               e -> {
                 try {
                   result.add(e.get());
